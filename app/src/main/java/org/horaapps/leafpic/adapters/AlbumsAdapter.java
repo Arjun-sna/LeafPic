@@ -281,9 +281,11 @@ public class AlbumsAdapter extends ThemedAdapter<AlbumsAdapter.ViewHolder> {
         });
 
         holder.card.setOnLongClickListener(v -> {
-            notifySelected(a.toggleSelected());
-            notifyItemChanged(position);
-            onChangeSelectedSubject.onNext(a);
+            if (a.getId() != Album.ALL_MEDIA_ALBUM_ID) {
+                notifySelected(a.toggleSelected());
+                notifyItemChanged(position);
+                onChangeSelectedSubject.onNext(a);
+            }
             return true;
         });
     }
