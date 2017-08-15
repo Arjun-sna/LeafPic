@@ -72,7 +72,7 @@ public class Media implements CursorHandler, Parcelable {
         return new Media(cu);
     }
 
-    public static String[] getProjection() {
+  public static String[] getProjection() {
         return new String[]{
                 MediaStore.Images.Media.DATA,
                 MediaStore.Images.Media.DATE_TAKEN,

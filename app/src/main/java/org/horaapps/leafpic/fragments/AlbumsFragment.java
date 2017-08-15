@@ -101,7 +101,9 @@ public class AlbumsFragment extends BaseFragment {
     private void displayAlbums() {
         adapter.clear();
         SQLiteDatabase db = HandlingAlbums.getInstance(getContext()).getReadableDatabase();
-        CPHelper.getAlbums(getContext(), hidden, excuded, sortingMode(), sortingOrder())
+        Album allMediaAlbum = Album.getAllMediaAlbum();
+        adapter.add(allMediaAlbum);
+        CPHelper.getAlbums(getContext(), hidden, excuded, sortingMode(), sortingOrder(), allMediaAlbum)
                 .subscribeOn(Schedulers.io())
                 .map(album -> album.withSettings(HandlingAlbums.getSettings(db, album.getPath())))
                 .observeOn(AndroidSchedulers.mainThread())
@@ -112,6 +114,7 @@ public class AlbumsFragment extends BaseFragment {
                             throwable.printStackTrace();
                         },
                         () -> {
+                            adapter.notifyItemChanged(0);
                             db.close();
                             act.nothingToShow(getCount() == 0);
                             refresh.setRefreshing(false);

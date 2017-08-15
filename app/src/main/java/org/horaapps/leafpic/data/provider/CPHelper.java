@@ -27,11 +27,11 @@ import io.reactivex.ObservableEmitter;
 public class CPHelper {
 
 
-    public static Observable<Album> getAlbums(Context context, boolean hidden, ArrayList<String> excluded ,SortingMode sortingMode, SortingOrder sortingOrder) {
-        return hidden ? getHiddenAlbums(context, excluded) : getAlbums(context, excluded, sortingMode, sortingOrder);
+    public static Observable<Album> getAlbums(Context context, boolean hidden, ArrayList<String> excluded, SortingMode sortingMode, SortingOrder sortingOrder, Album baseAlbum) {
+        return hidden ? getHiddenAlbums(context, excluded) : getAlbums(context, excluded, sortingMode, sortingOrder, baseAlbum);
     }
 
-    private static String getHavingCluause(int excludedCount){
+    private static String getHavingCluause(int excludedCount) {
 
         if (excludedCount == 0)
             return "(";
@@ -53,7 +53,7 @@ public class CPHelper {
 
     }
 
-    private static Observable<Album> getAlbums(Context context, ArrayList<String> excludedAlbums, SortingMode sortingMode, SortingOrder sortingOrder) {
+    private static Observable<Album> getAlbums(Context context, ArrayList<String> excludedAlbums, SortingMode sortingMode, SortingOrder sortingOrder, Album baseAlbum) {
 
         Query.Builder query = new Query.Builder()
                 .uri(MediaStore.Files.getContentUri("external"))
@@ -82,13 +82,13 @@ public class CPHelper {
 
         //NOTE: LIKE params for query
         for (String s : excludedAlbums)
-            args.add(s+"%");
+            args.add(s + "%");
 
 
         query.args(args.toArray());
 
 
-        return QueryUtils.query(query.build(), context.getContentResolver(), Album::new);
+        return QueryUtils.query(query.build(), context.getContentResolver(), baseAlbum);
     }
 
 
@@ -114,7 +114,7 @@ public class CPHelper {
                     if (!isExcluded(temp.getPath(), excludedAlbums) && (nomedia.exists() || temp.isHidden()))
                         checkAndAddFolder(temp, emitter, includeVideo);
 
-                    fetchRecursivelyHiddenFolder( temp, emitter, excludedAlbums, includeVideo);
+                    fetchRecursivelyHiddenFolder(temp, emitter, excludedAlbums, includeVideo);
                 }
             }
         }
@@ -144,7 +144,7 @@ public class CPHelper {
     }
 
     private static boolean isExcluded(String path, ArrayList<String> excludedAlbums) {
-        for(String s : excludedAlbums) if (path.startsWith(s)) return true;
+        for (String s : excludedAlbums) if (path.startsWith(s)) return true;
         return false;
     }
 
@@ -153,7 +153,7 @@ public class CPHelper {
 
     public static Observable<Media> getMedia(Context context, Album album, SortingMode sortingMode, SortingOrder sortingOrder) {
 
-        if (album.getId()==-1)return getMediaFromStorage(context, album);
+        if (album.getId() == -1) return getMediaFromStorage(context, album);
         else return getMediaFromMediaStore(context, album, sortingMode, sortingOrder);
     }
 
@@ -168,8 +168,9 @@ public class CPHelper {
                         subscriber.onNext(new Media(file));
                 subscriber.onComplete();
 
+            } catch (Exception err) {
+                subscriber.onError(err);
             }
-            catch (Exception err) { subscriber.onError(err); }
         });
 
     }
@@ -198,7 +199,7 @@ public class CPHelper {
             query.args(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE, album.getId());
         }
 
-        return QueryUtils.query(query.build(), context.getContentResolver(), Media::new);
+        return QueryUtils.query(query.build(), context.getContentResolver(), new Media());
     }
     //endregion
 }
