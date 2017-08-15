@@ -20,7 +20,7 @@ import java.util.ArrayList;
  */
 public class Album implements CursorHandler, Parcelable {
 
-    private static final long ALL_MEDIA_ALBUM_ID = 800;
+    public static final long ALL_MEDIA_ALBUM_ID = 800;
     private String name, path;
     private long id = -1, dateModified;
     private int count = -1;

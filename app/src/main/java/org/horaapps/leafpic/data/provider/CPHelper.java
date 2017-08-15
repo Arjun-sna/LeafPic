@@ -154,6 +154,7 @@ public class CPHelper {
     public static Observable<Media> getMedia(Context context, Album album, SortingMode sortingMode, SortingOrder sortingOrder) {
 
         if (album.getId() == -1) return getMediaFromStorage(context, album);
+        else if(album.getId() == Album.ALL_MEDIA_ALBUM_ID) return getAllMediaFromMediaStore(context, sortingMode, sortingOrder);
         else return getMediaFromMediaStore(context, album, sortingMode, sortingOrder);
     }
 
@@ -173,6 +174,29 @@ public class CPHelper {
             }
         });
 
+    }
+
+    private static Observable<Media> getAllMediaFromMediaStore(Context context, SortingMode sortingMode, SortingOrder sortingOrder) {
+        Query.Builder query = new Query.Builder()
+                .uri(MediaStore.Files.getContentUri("external"))
+                .projection(Media.getProjection())
+                .sort(sortingMode.getMediaColumn())
+                .ascending(sortingOrder.isAscending());
+
+        if (Hawk.get("set_include_video", true)) {
+            query.selection(String.format("(%s=? or %s=?)",
+                    MediaStore.Files.FileColumns.MEDIA_TYPE,
+                    MediaStore.Files.FileColumns.MEDIA_TYPE));
+            query.args(
+                    MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE,
+                    MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO);
+        } else {
+            query.selection(String.format("%s=?",
+                    MediaStore.Files.FileColumns.MEDIA_TYPE));
+            query.args(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE);
+        }
+
+        return QueryUtils.query(query.build(), context.getContentResolver(), new Media());
     }
 
     private static Observable<Media> getMediaFromMediaStore(Context context, Album album, SortingMode sortingMode, SortingOrder sortingOrder) {
