@@ -134,10 +134,10 @@ public class AlbumsAdapter extends ThemedAdapter<AlbumsAdapter.ViewHolder> {
     }
 
     public void selectAll() {
-        for (int i = 0; i < albums.size(); i++)
+        for (int i = 1; i < albums.size(); i++)
             if (albums.get(i).setSelected(true))
                 notifyItemChanged(i);
-        selectedCount = albums.size();
+        selectedCount = albums.size() - 1;
         onChangeSelectedSubject.onNext(Album.getEmptyAlbum());
     }
 
@@ -273,6 +273,7 @@ public class AlbumsAdapter extends ThemedAdapter<AlbumsAdapter.ViewHolder> {
 
         holder.card.setOnClickListener(v -> {
             if (selecting()) {
+                if (a.getId() == Album.ALL_MEDIA_ALBUM_ID) return;
                 notifySelected(a.toggleSelected());
                 notifyItemChanged(position);
                 onChangeSelectedSubject.onNext(a);
