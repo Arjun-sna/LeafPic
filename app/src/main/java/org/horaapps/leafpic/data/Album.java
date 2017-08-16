@@ -67,6 +67,9 @@ public class Album implements CursorHandler, Parcelable {
     @Override
     public Album handle(Cursor cur) throws SQLException {
         count += cur.getInt(2);
+        if (lastMedia == null) {
+            setLastMedia(new Media(cur.getString(3)));
+        }
         return new Album(cur);
     }
 
